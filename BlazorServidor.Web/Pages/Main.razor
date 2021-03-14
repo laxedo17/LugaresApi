@@ -1,0 +1,106 @@
+﻿@page "/main"
+@using BlazorServidor.Web.Data
+@using BlazorServidor.Web.Pages.Sitios
+@inject LugarServicio _lugarServicio
+@inject AppState _appState
+@implements IDisposable
+
+@if (Lugares == null)
+{
+    <p><em>Lendo...</em></p>
+}
+else
+{
+    <div class="container">
+        <div class="row">
+            <div class="col-8">
+                <h3>Lugar Turistico Mostrado</h3>
+                <VerLugarTurismo Lugar="Lugar" />
+            </div>
+            <div class="col-4">
+                <div class="row">
+                    <h3>Que novidades hai?</h3>
+                    <div class="card" style="width: 18rem">
+                        <div class="card-body">
+                            <h5 class="card-title">@_lugarServicio.NovoNomeLugar</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <h3>Lugares Mais Visitados</h3>
+                    <div class="card" style="width: 18rem;">
+                        <div class="card-body">
+                            <ul>
+                                @foreach (var lugar in Lugares)
+                                {
+                                    <li>
+                                        <a href="javascript:void(0)" @onclick="(()=>VerDetalles(lugar.Id))">
+                                            @lugar.Nome
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private IEnumerable<Lugar> Lugares;
+    public Lugar Lugar { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await _lugarServicio.InicializaSignalR();
+
+        Lugares = await _lugarServicio.GetLugaresAsync();
+        Lugar = Lugares.FirstOrDefault(); // conten o primeiro resultado dos lugares
+
+        _lugarServicio.NovoNomeLugar = Lugar.Nome;
+        _lugarServicio.NovaIdLugar = Lugar.Id;
+
+        _lugarServicio.OnChange += ManexaNovoLugarEngadido;
+        _appState.OnChange += ManexaCambioState;
+    }
+
+    private async void ManexaNovoLugarEngadido()
+    {
+        Lugares = await _lugarServicio.GetLugaresAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Manten o estado dos modelos actualizado.
+    /// </summary>
+    /// <returns></returns>
+    private async void ManexaCambioState()
+    {
+        Lugares = await _lugarServicio.GetLugaresAsync();
+        Lugar = _appState.Lugar;
+
+        if (_lugarServicio.NovaIdLugar == _appState.Lugar.Id)
+        {
+            _lugarServicio.NovoNomeLugar = _appState.Lugar.Nome;
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Actualiza o modelo de Lugar actual basado na Id.
+    /// </summary>
+    /// <param name="id"></param>
+    private void VerDetalles(int id)
+    {
+        Lugar = Lugares.FirstOrDefault(l => l.Id.Equals(id));
+    }
+
+    public void Dispose()
+    {
+        _appState.OnChange -= StateHasChanged;
+        _lugarServicio.OnChange -= StateHasChanged;
+    }
+}

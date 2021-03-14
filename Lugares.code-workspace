@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "BlazorServidor.Web"
+		},
+		{
+			"path": "LugaresApi"
+		},
+		{
+			"path": "BlazorWasm.PWA"
+		}
+	],
+	"settings": {}
+}

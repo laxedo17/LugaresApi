@@ -1,0 +1,75 @@
+﻿@using BlazorServidor.Web.Data
+@*Acceso a clase Lugar*@
+@inject LugarServicio _lugarServicio
+@*Inxectamos servicios*@
+@inject AppState _appState
+@*Asi podemos acceder a todos os seus metodos*@
+
+@if (ESoloReadOnly)
+{
+    <VerLugarTurismo Lugar="Lugar" />
+}
+else
+{
+    <EditForm Model="@Lugar" OnInvalidSubmit="ManexaEnvioValido">
+        <div clase="card">
+            <div clase="card-body">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                Nome:
+                <InputText class="form-control" @bind-Value="Lugar.Nome" />
+                Localizacion:
+                <InputText class="form-control" @bind-Value="Lugar.Localizacion" />
+                Acerca:
+                <InputTextArea class"form-control" @bind-Value="Lugar.Acerca" />
+
+                <br />
+                <button type="submit" class="btn btn-outline-primary">Gardar</button>
+                <button type="button" class="btn btn-outline-primary" @onclick="DesfacerCambios">DesfacerCambios</button>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code{
+    [Parameter] public Lugar Lugar { get; set; }
+    private Lugar LugarCopia { get; set; }
+    bool ESoloReadOnly { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        LugarCopia = new Lugar
+        {
+            Id = Lugar.Id,
+            Nome = Lugar.Nome,
+            Localizacion = Lugar.Localizacion,
+            Acerca = Lugar.Acerca,
+            Valoracions = Lugar.Valoracions,
+            ImaxeDatos = Lugar.ImaxeDatos,
+            UltimaActualizacion = Lugar.UltimaActualizacion
+        };
+    }
+    private void NotifyStateChange(Lugar lugar)
+    {
+        _appState.SetAppState(lugar);
+    }
+
+    protected async Task ManexaEnvioValido()
+    {
+        await _lugarServicio.ActualizarLugarAsync(Lugar);
+        ESoloReadOnly = true;
+        NotifyStateChange(Lugar);
+    }
+
+    protected void DesfacerCambios()
+    {
+        ESoloReadOnly = true;
+        if (Lugar.Nome.Trim() != LugarCopia.Nome.Trim() ||
+            Lugar.Localizacion.Trim() != Lugar.Localizacion.Trim() ||
+            Lugar.Acerca.Trim() != LugarCopia.Acerca.Trim())
+        {
+            Lugar = LugarCopia;
+            NotifyStateChange(LugarCopia);
+        }
+    }
+}

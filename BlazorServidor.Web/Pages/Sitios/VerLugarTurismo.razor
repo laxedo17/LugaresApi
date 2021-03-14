@@ -1,0 +1,27 @@
+﻿@using BlazorServidor.Web.Data
+
+@if (Editable)
+{
+    <EditarSitioTuristico Lugar="Lugar" />
+}
+else
+{
+    <div class="card">
+        <img class="card-img-top" src="@Lugar.ImaxeDatos" alt="Tarxeta imaxe">
+        <div class="card-body">
+            <h5 class="card-title">@Lugar.Nome</h5>
+            <h6 class="card-subtitle mb-2 text-muted">
+                Localizacion: <b>@Lugar.Localizacion</b>
+                Valoracions: @Lugar.Valoracions
+                Ultima Actualizacion: @Lugar.UltimaActualizacion.ToShortDateString()
+            </h6>
+            <p class="card-text">@Lugar.Acerca</p>
+            <button type="button" class="btn btn-outline-primary" @onclick="(() => Editable = true)">Editar</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Lugar Lugar { get; set; }
+    bool Editable { get; set; } = false;
+}
